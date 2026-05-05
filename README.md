@@ -37,6 +37,7 @@ ros2 run rqt_joint_trajectory_controller rqt_joint_trajectory_controller
 python3 gripper_slider_control.py
 ```
 
+若想启动gazebo和rviz，请运行以下代码：
 
 -V2.0 
 
