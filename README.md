@@ -419,3 +419,87 @@ V2.5
   </world>
 </sdf>
 ```
+
+V2.6
+
+问题描述：在经过上述调整后仍未成功抓取物体，应该是缺少力控。
+
+更新说明：此处做力控（effort controllers）的尝试
+
+检查已有的ros2_control 控制器
+```
+ros2 pkg list | grep controller
+```
+看看有没有类似：
+```
+effort_controllers/JointTrajectoryController
+effort_controllers/JointGroupEffortController
+effort_controllers/JointEffortController
+```
+
+如果没有，则需要安装 effort 控制器包相应包:
+```
+sudo apt update
+sudo apt install ros-humble-ros2-controllers ros-humble-effort-controllers
+```
+
+首先在模型urdf文件后添加力控接口
+```
+  <!-- 夹爪：力控接口 -->
+  <joint name="endjoint1">
+    <command_interface name="effort"/>
+    <state_interface name="effort"/>
+    <state_interface name="position"/>
+    <state_interface name="velocity"/>
+  </joint>
+  <joint name="endjoint2">
+    <command_interface name="effort"/>
+    <state_interface name="effort"/>
+    <state_interface name="position"/>
+    <state_interface name="velocity"/>
+  </joint>
+</ros2_control>
+```
+
+package包添加依赖：
+```
+  <exec_depend>effort_controllers</exec_depend>
+```
+
+controllers.yaml文件改动：
+```
+gripper_controller:
+  type: effort_controllers/JointGroupEffortController  # 这里添加改动
+  ros__parameters:
+    joints:
+      - endjoint1
+      - endjoint2
+    command_interfaces:
+      - effort            # 这里改为effort
+    state_interfaces:
+      - position
+      - velocity
+
+    pid:
+      endjoint1:
+        p: 700.0
+        i: 0.0
+        d: 30.0
+      endjoint2:
+        p: 700.0
+        i: 0.0
+        d: 30.0
+```
+
+重新编译启动文件：
+```
+cd ~/arm_ws
+colcon build --packages-select cs_cs63
+source install/setup.bash
+ros2 launch cs_cs63 gazebo_control.launch.py
+```
+
+此次改动启动失败：libgazebo_ros2_control.so 插件加载失败，直接导致 Gazebo 崩溃
+
+<img width="1648" height="501" alt="image" src="https://github.com/user-attachments/assets/3415af06-5d22-4c99-8ac4-6a8a1e5e2eea" />
+
