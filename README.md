@@ -3,7 +3,7 @@
 
 -V1.0 
 
-遇到问题：机械臂模型的获取。首先需要有一个机械臂模型
+问题描述：机械臂模型的获取。首先需要有一个机械臂模型
 
 解决方案：三种方案。首先，自己建模。其次，直接在github上找一个模型的urdf文件（这样甚至可以省去urdf的导出过程）最后，在网站上下载自己所需要的机械臂模型（为了得到自己需要的模型，同时了解urdf文件的导出过程，此处选用该方法）
 
@@ -12,41 +12,305 @@
 
 -V1.1 
 
-遇到问题：机械臂模型的urdf文件导出。
+问题描述：机械臂模型的urdf文件导出。
+
 想要把自己的机械臂模型导入gazebo环境，需要在solidworks导出urdf文件。
 
-解决方案：urdf文件在solidworks的导出首先需要安装插件SW2URDF
+更新说明：解决了机械臂模型的urdf文件导出问题
+
+urdf文件在solidworks的导出首先需要安装插件SW2URDF
 此处借鉴古月居的教程。在此给出链接https://www.bilibili.com/video/BV1Tx411o7rH/?spm_id_from=333.337.top_right_bar_window_default_collection.content.click&vd_source=1a9747ec3d5fd6acd376b9ab43f94b53
 
 在导出urdf文件时，对机械臂模型需要做建系和旋转轴的定义处理——软件自动识别的坐标系不可靠。建系与旋转轴的定于可参考图中所示：
 <img width="569" height="655" alt="image" src="https://github.com/user-attachments/assets/9b97b5f2-c0fe-424d-b605-cad9eb4151f0" />
 
-gazebo导入模型及相应控制器指令
+V2.0
+
+问题描述：使机械臂各个关节联系起来
+
+更新说明：解决了机械臂的关节连接问题
+
+未加入控制器以及关节联系的代码，机械臂各个关节会耷拉下去。
+<img width="739" height="681" alt="image" src="https://github.com/user-attachments/assets/98115861-385d-45a9-a288-fdff7a2223a5" />
+
+在模型urdf文件各个关节的<joint>后加入<transmission>,为机械臂关节配置传动机构与硬件接口，此处给出一个示例：
+
+```
+<transmission name="joint1_trans">
+  <type>transmission_interface/SimpleTransmission</type>
+  <joint name="joint1">
+    <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+  </joint>
+  <actuator name="joint1_motor">
+    <mechanicalReduction>1</mechanicalReduction>
+  </actuator>
+</transmission>
+```
+
+同时需要在模型urdf文件的</robot>标签前加上：
+```
+<ros2_control name="cs_cs63" type="system">
+  <hardware>
+    <plugin>gazebo_ros2_control/GazeboSystem</plugin>
+  </hardware>
+
+  <joint name="joint1">
+    <command_interface name="position"/>
+    <state_interface name="position"/>
+    <state_interface name="velocity"/>
+  </joint>
+
+  <joint name="joint2">
+    <command_interface name="position"/>
+    <state_interface name="position"/>
+    <state_interface name="velocity"/>
+  </joint>
+
+  <joint name="joint3">
+    <command_interface name="position"/>
+    <state_interface name="position"/>
+    <state_interface name="velocity"/>
+  </joint>
+  
+  <joint name="joint4">
+    <command_interface name="position"/>
+    <state_interface name="position"/>
+    <state_interface name="velocity"/>
+  </joint>
+
+  <joint name="joint5">
+    <command_interface name="position"/>
+    <state_interface name="position"/>
+    <state_interface name="velocity"/>
+  </joint>
+
+  <joint name="joint6">
+    <command_interface name="position"/>
+    <state_interface name="position"/>
+    <state_interface name="velocity"/>
+  </joint>
+  
+  <joint name="endjoint1">
+    <command_interface name="position"/>
+    <state_interface name="position"/>
+    <state_interface name="velocity"/>
+  </joint>
+  <joint name="endjoint2">
+    <command_interface name="position"/>
+    <state_interface name="position"/>
+    <state_interface name="velocity"/>
+  </joint>
+</ros2_control>
+
+<gazebo>
+  <plugin name="gazebo_ros2_control" filename="libgazebo_ros2_control.so">
+    <parameters>$(find cs_cs63)/config/controllers.yaml</parameters>
+    <robot_description>robot_description</robot_description>
+  </plugin>
+</gazebo>
+```
+
+完成各个关节的<transmission>定义后，效果如图所示：
+<img width="520" height="334" alt="image" src="https://github.com/user-attachments/assets/40609a82-9b53-4ec7-89aa-172e30b52683" />
+
+V2.1 
+
+问题描述：对机械臂各个关节进行控制
+
+更新说明：此处使用可视化的手动滑块控制器——rqt控制器，对模型进行控制
+
+rqt控制器的安装，安装命令
+```
+sudo apt install ros-humble-joint-state-publisher-gui
+```
+
+同时需要在launch文件中加上：
+```
+joint_state_publisher_gui = Node(
+    package='joint_state_publisher_gui',
+    executable='joint_state_publisher_gui'
+)
+```
+使文件启动时识别到控制器
+
+在controllers.yaml文件末尾加上：
+```
+arm_controller:
+  ros__parameters:
+    joints:
+      - joint1
+      - joint2
+      - joint3
+      - joint4
+      - joint5
+      - joint6
+    command_interfaces:
+      - position
+    state_interfaces:
+      - position
+      - velocity
+    allow_partial_joints_goal: false
+    open_loop_control: false
+    constraints:
+      stopped_velocity_tolerance: 0.01
+      goal_time: 0.0
+    allow_integration_in_goal_trajectories: true
+```
+识别控制器名称和类型
+
+将模型导入gazebo：
 ```
 cd ~/arm_ws
 colcon build --packages-select cs_cs63
 source install/setup.bash
 ros2 launch cs_cs63 gazebo_control.launch.py
 ```
-加载rqt控制器：
+
+安装后启动rqt控制器命令：
 ```
 ros2 run rqt_joint_trajectory_controller rqt_joint_trajectory_controller
 ```
-夹具张紧控制器：
+
+效果如图所示：
+<img width="778" height="537" alt="image" src="https://github.com/user-attachments/assets/18c37a81-3dd6-4fb9-a333-602e3ab8304f" />
+
+V2.2
+
+问题描述：想要控制夹具对物体进行夹持，需要控制夹具的张紧
+
+更新说明：解决了对夹具控制的问题，可通过控制器滑块对夹具张紧程度进行调节
+
+滑块控制器的构建，首先在scripts文件中创建python脚本：
+```
+import rclpy
+from rclpy.node import Node
+from std_msgs.msg import Float64MultiArray
+import tkinter as tk
+from tkinter import ttk
+
+class GripperSliderController(Node):
+    def __init__(self):
+        super().__init__("gripper_slider_ctrl")
+        self.pub = self.create_publisher(
+            Float64MultiArray,
+            "/gripper_controller/commands",
+            10
+        )
+        # 最大角度 0.785 rad
+        self.max_rad = 0.785
+
+    def send_gripper(self, val):
+        # val 是滑块0~100的值，映射到 0 ~ 0.785
+        scale = float(val) / 100.0
+        rad = scale * self.max_rad
+
+        msg = Float64MultiArray()
+        msg.data = [-rad, rad]
+        self.pub.publish(msg)
+        self.get_logger().info(f"夹紧角度: {rad:.3f} rad  百分比: {val}%")
+
+def main():
+    rclpy.init()
+    node = GripperSliderController()
+
+    # 搭建GUI滑块
+    root = tk.Tk()
+    root.title("夹爪实时滑块控制器")
+    root.geometry("450x120")
+
+    label = ttk.Label(root, text="拖动滑块调节夹紧程度（0%全开 → 100%全闭）")
+    label.pack(pady=10)
+
+    slider = ttk.Scale(
+        root,
+        from_=0,
+        to=100,
+        orient=tk.HORIZONTAL,
+        command=node.send_gripper
+    )
+    slider.pack(fill=tk.X, padx=20)
+
+    # 固定刷新ros2
+    def ros_spin():
+        rclpy.spin_once(node, timeout_sec=0.01)
+        root.after(20, ros_spin)
+
+    ros_spin()
+    root.mainloop()
+
+    node.destroy_node()
+    rclpy.shutdown()
+
+if __name__ == "__main__":
+    main()
+```
+
+然后在controllers.yaml文件末尾加上：
+```
+gripper_controller:
+  ros__parameters:
+    joints:
+      - endjoint1
+      - endjoint2
+    command_interfaces:
+      - position
+    state_interfaces:
+      - position
+      - velocity
+
+    pid:
+      endjoint1:
+        p: 700.0
+        i: 0.0
+        d: 30.0
+      endjoint2:
+        p: 700.0
+        i: 0.0
+        d: 30.0
+```
+使得控制文件能够识别并读取你的夹具控制器。
+
+同时也需要在launch文件加上：
+```
+    load_gripper_controller = ExecuteProcess(
+        cmd=["ros2", "control", "load_controller", "--set-state", "active", "gripper_controller"],
+        output="screen"
+    )
+```
+使得启动后识别该控制器。
+
+启动夹具张紧控制器命令（如果报错请在脚本所处文件夹中打开终端）：
 ```
 python3 gripper_slider_control.py
 ```
+效果如图所示：
+<img width="1138" height="553" alt="image" src="https://github.com/user-attachments/assets/cc1523ce-d614-495c-b230-64047e8585ae" />
 
-若想启动gazebo和rviz，请运行以下代码：
 
--V2.0 
 
-遇到问题：在将机械臂导入模型并形成关节控制后，物体抓取的参数设置
+-V2.3
 
-解决方案：想要仿真实际的抓取，需要对物理属性进行定义和调整。
+问题描述：将新模型的urdf文件导入至虚拟机/gazebo后，模型错位
+
 更新说明：
-对夹爪和所抓取物体进行了物理属性的定义和参数调整
-解决了抓取时穿模的问题
+在导入新模型后，即使模型的.stl文件相同，但不同包对应不同的结果，所以在导入新的urdf文件包后，需要使用新包的.stl文件。
+
+导入新模型而未改stl文件：
+<img width="987" height="724" alt="image" src="https://github.com/user-attachments/assets/9663127c-2426-42b3-b9ae-a6d021bf6685" />
+
+导入新模型stl文件后，恢复正常：
+<img width="880" height="669" alt="image" src="https://github.com/user-attachments/assets/f02ae683-de76-4d57-99ce-d142ed37aca9" />
+
+
+
+-V2.4
+
+问题描述：在将机械臂导入模型并形成关节控制后，物体抓取的参数设置。想要仿真实际的抓取，需要对物理属性进行定义和调整。
+
+
+更新说明：对夹具以及所抓取物体的物理属性进行了参数的调节
+解决了抓取时穿模的问题：提高夹爪和物体刚度。
+
 ```
 #夹具1的物理属性
   <joint name="endjoint1" type="revolute"> 
@@ -105,9 +369,11 @@ python3 gripper_slider_control.py
         </surface>
       </collision>
 ```
-V2.1 
 
-遇到问题：gazebo仿真力控层面无法实现对物体的真实抓取——抓取物体时滑落或弹开
+V2.5
+
+问题描述：gazebo仿真力控层面无法实现对物体的真实抓取——抓取物体时滑落或弹开
+
 更新说明：
 创建了.world文件定义世界环境
 ```
