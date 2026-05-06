@@ -567,6 +567,13 @@ gripper_controller:
 <img width="664" height="643" alt="image" src="https://github.com/user-attachments/assets/9c5ac2dd-7e1e-4edb-97c7-f79ca5a3148f" />
 
 继续对物体进行抓取尝试后，未果。
+这里通过指令
+```
+ros2 topic pub /gripper_controller/commands std_msgs/msg/Float64MultiArray "data: [-0.5, 0.5]"
+```
+向机械臂夹具发布力控信息
+<img width="1118" height="748" alt="image" src="https://github.com/user-attachments/assets/05e99a7c-f05d-42a0-aade-430e4ede6136" />
+
 
 现在通过给夹具配置一个力传感器，查看是否存在作用力和反作用力
 ```
@@ -580,3 +587,5 @@ gripper_controller:
     </sensor>
   </gazebo>   #在urdf文件的<link>标签前配置传感器
 ```
+
+
