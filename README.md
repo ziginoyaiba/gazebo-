@@ -503,3 +503,62 @@ ros2 launch cs_cs63 gazebo_control.launch.py
 
 <img width="1648" height="501" alt="image" src="https://github.com/user-attachments/assets/3415af06-5d22-4c99-8ac4-6a8a1e5e2eea" />
 
+两个夹具原来的代码定义：
+```
+  <joint name="endjoint1">
+    <command_interface name="position"/>
+    <state_interface name="position"/>
+    <state_interface name="velocity"/>
+  </joint>
+  <joint name="endjoint2">
+    <command_interface name="position"/>
+    <state_interface name="position"/>
+    <state_interface name="velocity"/>
+  </joint>
+</ros2_control>
+```
+
+在两个夹爪后增加了力控插件
+```
+  <!-- 夹爪：力控接口 -->
+  <joint name="endjoint1">
+    <command_interface name="effort"/>
+    <state_interface name="effort"/>
+    <state_interface name="position"/>
+    <state_interface name="velocity"/>
+  </joint>
+  <joint name="endjoint2">
+    <command_interface name="effort"/>
+    <state_interface name="effort"/>
+    <state_interface name="position"/>
+    <state_interface name="velocity"/>
+  </joint>
+</ros2_control>
+```
+
+controllers.yaml文件夹爪部分加上effort部分
+```
+gripper_controller:
+  ros__parameters:
+    joints:
+      - endjoint1
+      - endjoint2
+    command_interfaces:
+      - effort
+    state_interfaces:
+      - position
+      - velocity
+      - effort  # 加了 effort state
+    pid:
+      endjoint1:
+        p: 700.0
+        i: 0.0
+        d: 30.0
+      endjoint2:
+        p: 700.0
+        i: 0.0
+        d: 30.0
+```
+
+运行启动文件，打开gazebo，这里可以看到夹具耷拉下去了
+<img width="664" height="643" alt="image" src="https://github.com/user-attachments/assets/9c5ac2dd-7e1e-4edb-97c7-f79ca5a3148f" />
