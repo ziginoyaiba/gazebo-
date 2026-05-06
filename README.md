@@ -560,5 +560,23 @@ gripper_controller:
         d: 30.0
 ```
 
+同时为了增大与物体的摩擦力，这里将夹爪的抓取面积设计更大了
+<img width="863" height="742" alt="image" src="https://github.com/user-attachments/assets/6c2fb38c-5ce7-4f79-9308-1162de556245" />
+
 运行启动文件，打开gazebo，这里可以看到夹具耷拉下去了
 <img width="664" height="643" alt="image" src="https://github.com/user-attachments/assets/9c5ac2dd-7e1e-4edb-97c7-f79ca5a3148f" />
+
+继续对物体进行抓取尝试后，未果。
+
+现在通过给夹具配置一个力传感器，查看是否存在作用力和反作用力
+```
+    <gazebo reference="end_link2">
+  <sensor type="force_torque" name="ft_sensor">
+      <always_on>1</always_on>
+      <update_rate>500</update_rate>
+      <topicName>gripper/ft_sensor2</topicName>
+      <frameName>end_link2</frameName>
+      <gaussianNoise>0.0</gaussianNoise>
+    </sensor>
+  </gazebo>   #在urdf文件的<link>标签前配置传感器
+```
