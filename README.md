@@ -602,4 +602,5 @@ ros2 topic pub /gripper_controller/commands std_msgs/msg/Float64MultiArray "data
   </gazebo>   #在urdf文件的<link>标签前配置传感器
 ```
 
-
+还是没抓起来，目前夹取给我的感觉像是摩擦不存在一样：
+接下来我将尝试：1.把夹具的stl文件换掉。2.把摩擦参数写在 collision，而不是link。
