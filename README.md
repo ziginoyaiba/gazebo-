@@ -577,7 +577,7 @@ gripper_controller:
 同时为了增大与物体的摩擦力，这里将夹爪的抓取面积设计更大了
 <img width="863" height="742" alt="image" src="https://github.com/user-attachments/assets/6c2fb38c-5ce7-4f79-9308-1162de556245" />
 
-运行启动文件，打开gazebo，这里可以看到夹具耷拉下去了
+运行启动文件，打开gazebo，从位置控制转到力/力矩控制，这里可以看到夹具耷拉下去了，这是因为夹具缺少初始力，因此会在重力作用下倒去
 <img width="664" height="643" alt="image" src="https://github.com/user-attachments/assets/9c5ac2dd-7e1e-4edb-97c7-f79ca5a3148f" />
 
 继续对物体进行抓取尝试后，未果。
