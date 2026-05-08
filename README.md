@@ -1,4 +1,4 @@
-<img width="1122" height="407" alt="image" src="https://github.com/user-attachments/assets/74a5a4fc-7dc8-4cd0-9e6d-588f8dbd0a66" /># gazebo-机械臂仿真项目日志
+gazebo-机械臂仿真项目日志
 此处记录从模型导入到进入仿真环境构建过程
 
 -V1.0 
