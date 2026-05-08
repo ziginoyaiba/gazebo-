@@ -1,4 +1,4 @@
-# gazebo-机械臂仿真项目日志
+<img width="1122" height="407" alt="image" src="https://github.com/user-attachments/assets/74a5a4fc-7dc8-4cd0-9e6d-588f8dbd0a66" /># gazebo-机械臂仿真项目日志
 此处记录从模型导入到进入仿真环境构建过程
 
 -V1.0 
@@ -602,5 +602,54 @@ ros2 topic pub /gripper_controller/commands std_msgs/msg/Float64MultiArray "data
   </gazebo>   #在urdf文件的<link>标签前配置传感器
 ```
 
-还是没抓起来，目前夹取给我的感觉像是摩擦不存在一样：
-接下来我将尝试：1.把夹具的stl文件换掉。2.把摩擦参数写在 collision，而不是link。
+还是没抓起来，目前夹取给我的感觉像是摩擦不存在：
+
+现在对ATTACHLINK插件进行尝试,此处给出大佬提供插件的位置：https://github.com/IFRA-Cranfield/IFRA_LinkAttacher
+
+如果克隆不了，请自行下载
+
+首先安装插件包：
+```bash
+cd ~/arm_ws/src
+git clone https://github.com/IFRA-Cranfield/IFRA_LinkAttacher.git
+cd ~/arm_ws
+colcon build
+```
+
+然后需要在world文件的</world>标签前加上：
+```bash
+<plugin name="gazebo_link_attacher" filename="libgazebo_link_attacher.so"/>
+```
+按理来说这个时候已经安装好插件了，但是在此处记录几个遇到的问题：
+
+如果说在安装后突然运行不了了，请重新安装编译一次：（此处代码自用）
+```bash
+cd ~/arm_ws/src
+git clone https://github.com/IFRA-Cranfield/IFRA_LinkAttacher.git
+cd ~/arm_ws
+colcon build
+```
+用以下命令查看自己的插件是否安装了
+```bash
+ros2 service list
+```
+成功的输出如图所示，需包含有/ATTACHLINK和/DETACHLINK
+<img width="1122" height="407" alt="image" src="https://github.com/user-attachments/assets/8c7db2a1-62a5-4ece-8bcf-03122a9af437" />
+每次新开终端都要执行：
+```bash
+cd ~/arm_ws
+source install/setup.bash
+```
+现在启动gazebo，实行命令（夹紧or张开）：
+```bash
+# To ATTACH an OBJECT to a ROBOT's END-EFFECTOR:
+ros2 service call /ATTACHLINK linkattacher_msgs/srv/AttachLink "{model1_name: 'model1', link1_name: 'link1', model2_name: 'model2', link2_name: 'link2'}"
+# To DETACH the OBJECT from the END-EFFECTOR:
+ros2 service call /DETACHLINK linkattacher_msgs/srv/DetachLink "{model1_name: 'model1', link1_name: 'link1', model2_name: 'model2', link2_name: 'link2'}"
+```
+插件成功运行展示：
+<img width="1646" height="837" alt="image" src="https://github.com/user-attachments/assets/188c9504-3004-4b48-97ad-27bdcc23c396" />
+
+
+
+
