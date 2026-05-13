@@ -604,6 +604,8 @@ ros2 topic pub /gripper_controller/commands std_msgs/msg/Float64MultiArray "data
 
 还是没抓起来，目前夹取给我的感觉像是摩擦不存在：
 
+V2.7
+
 现在对ATTACHLINK插件进行尝试,此处给出大佬提供插件的位置：https://github.com/IFRA-Cranfield/IFRA_LinkAttacher
 
 如果克隆不了，请自行下载
@@ -649,6 +651,22 @@ ros2 service call /DETACHLINK linkattacher_msgs/srv/DetachLink "{model1_name: 'm
 ```
 插件成功运行展示：
 <img width="1646" height="837" alt="image" src="https://github.com/user-attachments/assets/188c9504-3004-4b48-97ad-27bdcc23c396" />
+
+V2.8
+
+更新说明：解决了先前gazebo和rviz运动不同步的问题
+
+问题描述：一开始一直以为是gazebo和rviz的launch文件时间不一致的问题，在把两者及其controllers.yaml文件完成时间同步```use_sim_time:=true```后依旧不行，
+运行日志如下
+<img width="1848" height="400" alt="image" src="https://github.com/user-attachments/assets/a0fadf31-f26e-4c8c-ac42-a0d270acf8cf" />
+
+
+最后发现是```MoveGroup```节点实际上并没有订阅 ```/clock```话题，导致它用的还是系统时间，和 Gazebo 的仿真时间脱节。
+通过下面代码让```MoveGroup```节点完成仿真时间同步后，实现了gazebo和rviz的联合仿真
+```
+ros2 param set /move_group use_sim_time true
+```
+<img width="1851" height="849" alt="image" src="https://github.com/user-attachments/assets/a202b29b-f4f2-4703-a9f1-7ae7ec2ddc6d" />
 
 
 
