@@ -668,6 +668,122 @@ ros2 param set /move_group use_sim_time true
 ```
 <img width="1851" height="849" alt="image" src="https://github.com/user-attachments/assets/a202b29b-f4f2-4703-a9f1-7ae7ec2ddc6d" />
 
+V2.9
 
+更新说明：解决了力控抓取物体的问题，物体无法被抓取的问题最终得到了解决。
 
+问题描述：物体始终无法抓起的根本原因既非摩擦力设置，也非夹爪本身，而是机械臂的控制器——该控制器当时使用的是初始配置的 PID 增益的位置控制器。这一设置导致 Gazebo 模拟环境发出警告信息，提示所使用的物理引擎可能无法正常工作。在改用配置了 PID 增益的力控制器之后，Gazebo 环境中的机器人最终成功实现了对物体的抓取。此前卡住很久一直无法解决，知道看到这位大佬的视频才得以解决，此处给出来源：https://www.youtube.com/watch?v=JO5NH0GR3qQ
 
+此处给出gazebo控制的yaml文件：
+```
+controller_manager:
+  ros__parameters:
+    update_rate: 1000
+    use_sim_time: true
+
+    joint_state_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster
+
+    arm_controller:
+      type: joint_trajectory_controller/JointTrajectoryController
+
+    gripper_controller:
+      type: effort_controllers/JointGroupEffortController  #夹具部分注意改为力控而非位置控制！
+
+arm_controller:
+  ros__parameters:
+    joints:
+      - joint1
+      - joint2
+      - joint3
+      - joint4
+      - joint5
+      - joint6
+    command_interfaces:
+      - position
+    state_interfaces:
+      - position
+      - velocity
+    allow_partial_joints_goal: false
+    open_loop_control: false
+    constraints:
+      stopped_velocity_tolerance: 0.01
+      goal_time: 0.0
+    allow_integration_in_goal_trajectories: true
+
+gripper_controller:
+  ros__parameters:
+    joints:
+      - endjoint1
+      - endjoint2
+    command_interfaces:
+      - effort            # 这里改为effort，删去position
+    state_interfaces:
+      - position
+      - velocity
+      - effort            #添加effort
+
+    pid:
+      endjoint1:
+        p: 1000.0
+        i: 1.0
+        d: 25.0
+      endjoint2:
+        p: 1000.0
+        i: 1.0
+        d: 25.0
+```
+此外，在模型的urdf文件也需要做相应的改动，此处不具体战术。
+
+对于pid增益的改动是主要的：
+
+在此处做改动前后的对比：
+
+改动前：
+```
+gripper_controller:
+  ros__parameters:
+    joints:
+      - endjoint1
+      - endjoint2
+    command_interfaces:
+      - position
+    state_interfaces:
+      - position
+      - velocity
+    pid:
+      endjoint1:
+        p: 700.0
+        i: 0.0
+        d: 30.0
+      endjoint2:
+        p: 700.0
+        i: 0.0
+        d: 30.0
+```
+改动后：
+```
+gripper_controller:
+  ros__parameters:
+    joints:
+      - endjoint1
+      - endjoint2
+    command_interfaces:
+      - effort            # 这里改为effort
+    state_interfaces:
+      - position
+      - velocity
+      - effort
+
+    pid:
+      endjoint1:
+        p: 1000.0
+        i: 1.0
+        d: 25.0
+      endjoint2:
+        p: 1000.0
+        i: 1.0
+        d: 25.0
+```
+
+此前无法
