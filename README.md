@@ -786,4 +786,14 @@ gripper_controller:
         d: 25.0
 ```
 
-此前无法
+抓取实现后：
+<img width="1918" height="878" alt="650dcc0cc00135a24f5ba9491fe1f918" src="https://github.com/user-attachments/assets/bd88f5e1-da9e-4f49-ab60-9f3456044f1f" />
+<img width="1918" height="878" alt="6b9f17813e98980cda5f6aa15d467e33" src="https://github.com/user-attachments/assets/e556eb16-a637-4162-95c4-971d5a44fc30" />
+
+目前实现的是缓慢的夹取，但是仍然存在不稳定的问题，如图所示：在机械臂举到高处时，物体会发生侧滑——这可能是摩擦力还不足的原因（至少目前能确定的是摩擦力和接触是存在的）
+<img width="1918" height="878" alt="c5d3d83dfbc59283b3c3f16cc5d6d892" src="https://github.com/user-attachments/assets/783b6955-1833-43cf-ab80-01312a72afeb" />
+<img width="517" height="564" alt="0b1a2b61ea5e9648fe282fc55d360627" src="https://github.com/user-attachments/assets/5d221e42-b695-4f6a-82c1-227c78ddccb0" />
+
+
+
+
