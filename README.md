@@ -794,6 +794,62 @@ gripper_controller:
 <img width="1918" height="878" alt="c5d3d83dfbc59283b3c3f16cc5d6d892" src="https://github.com/user-attachments/assets/783b6955-1833-43cf-ab80-01312a72afeb" />
 <img width="517" height="564" alt="0b1a2b61ea5e9648fe282fc55d360627" src="https://github.com/user-attachments/assets/5d221e42-b695-4f6a-82c1-227c78ddccb0" />
 
+V3.0
+更新说明：简单抓取实现后的稳定性提升尝试
+
+问题描述：虽然实现了抓取，但是是在慢速以及单一物体前提下的抓取，仍然存在不稳定，侧滑等情况，以及机械臂抓取物体的广泛性有待提高，此处作其他方法的尝试。
+
+针对于前面的经验之谈，改变pid参数是必要的尝试，但是在进行多次修改之后问题没能得到解决，故再寻求其他方法
+
+此处尝试：在力控effort_controllers的配置文件里给夹具关节加一个关节空间的力前馈+阻抗补偿
+
+问题1：在力控effort_controllers的配置文件直接定义这样的动力学公式是不可行的，直接设计阻抗公式导致我的gazebo无法打开。
+
+此处提出另一种可行方式：使用脚本为机械臂夹具运行阻抗：
+```
+import rclpy
+from rclpy.node import Node
+from std_msgs.msg import Float64MultiArray
+
+class GripperSimpleFixed(Node):
+    def __init__(self):
+        super().__init__("gripper_simple_fixed")
+
+        self.pub = self.create_publisher(Float64MultiArray, "/gripper_controller/commands", 10)
+        self.timer = self.create_timer(0.1, self.send)
+
+    def send(self):
+        msg = Float64MultiArray()
+        # 方向：对向夹紧 | 力度：极轻、极稳
+        msg.data = [0.2, -0.2]
+        self.pub.publish(msg)
+
+def main(args=None):
+    rclpy.init(args=args)
+    node = GripperSimpleFixed()
+    rclpy.spin(node)
+
+if __name__ == "__main__":
+    main()
+```
+
+此处可以看到抓取时物体依旧存在滑动，故该尝试失败
+<img width="1849" height="853" alt="image" src="https://github.com/user-attachments/assets/8bc52eda-5c72-4af7-9063-899213a0fd68" />
+
+通过图片可以看到接触的形式为点接触或者线接触，不排除接触面积过少的可能。
+
+V3.1
+
+更新说明：更改夹具模型——为夹具新添一个包围式结构，一来可以防止物体侧滑，二来可以增大接触面积
+
+问题描述：针对前面的尝试，得出抓取不稳定的原因可能来自于接触面，此处做模型改动来尝试解决抓取稳定问题
+
+
+
+
+
+
+
 
 
 
