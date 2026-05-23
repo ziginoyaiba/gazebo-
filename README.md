@@ -854,7 +854,27 @@ V3.1
 同时能够抓取的姿态范围也得以大大拓宽
 <img width="1918" height="878" alt="image" src="https://github.com/user-attachments/assets/3e2288e5-bfc7-4046-8b96-c445909eb41e" />
 
-但是目前的仍然存在的问题是，机械臂运动速度不可过快，否则物体会滑落
+但是目前仍然存在的问题是，机械臂运动速度不可过快，否则物体会滑落
+
+
+
+V3.2
+
+更新说明：基于3.1的更新，在此基础上重新对不同物体进行了抓取尝试。
+
+问题描述：先前由于抓取侧滑的原因，使得施力范围非常有限（施力越大侧滑越严重），因此在解决侧滑问题后，夹具施力范围增加，可夹持物体的能力也更强了
+
+可乐罐的夹取：先前可乐罐是从未夹起来过的——夹具与圆柱体间为线接触，有效夹取面积少，对施力要求大。
+此处从终端发出施力指令，已夹取成功
+```
+ros2 topic pub /gripper_controller/commands std_msgs/msg/Float64MultiArray "{data: [-0.785, 0.785]}"
+```
+
+<img width="1918" height="878" alt="image" src="https://github.com/user-attachments/assets/407e6bbc-b938-443a-9193-c999196d504b" />
+
+
+
+
 
 
 
