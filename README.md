@@ -844,11 +844,17 @@ V3.1
 
 问题描述：针对前面的尝试，得出抓取不稳定的原因可能来自于接触面，此处做模型改动来尝试解决抓取稳定问题
 
+我改变了夹具的模型，为了改善侧滑的问题，我在边界处做了圆弧型的拓展
+<img width="1554" height="857" alt="image" src="https://github.com/user-attachments/assets/ee773b47-7250-4470-96e9-5c83c15d56d4" />
 
+抓取侧滑的问题最终得到了解决。将修改好的模型重新导入gazebo中进行抓取尝试：
+<img width="1581" height="773" alt="image" src="https://github.com/user-attachments/assets/b37a6b10-5c99-4ebe-b1a5-355e4af15fa8" />
+<img width="1586" height="782" alt="image" src="https://github.com/user-attachments/assets/59154c83-7399-4765-981c-8b2b4bfbb50a" />
 
+同时能够抓取的姿态范围也得以大大拓宽
+<img width="1918" height="878" alt="image" src="https://github.com/user-attachments/assets/3e2288e5-bfc7-4046-8b96-c445909eb41e" />
 
-
-
+但是目前的仍然存在的问题是，机械臂运动速度不可过快，否则物体会滑落
 
 
 
